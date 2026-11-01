@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "Dual-Lock oral-peptide Monte Carlo: mechanistic design-space model with paired arms, global sensitivity, structural uncertainty and falsification maps"
+authors:
+  - family-names: Sandler
+    given-names: Leon
+    orcid: "https://orcid.org/0009-0007-4584-808X"
+version: "1.0.0"
+doi: 10.5281/zenodo.23864330
+date-released: "2026-11-01"
+license: MIT
+repository-code: "https://github.com/sandlerleon/dual-lock-oral-peptide-mc"

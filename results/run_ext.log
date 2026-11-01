@@ -1,0 +1,27 @@
+[    44s] equiv done
+[    44s] stage equiv saved (44 s)
+[    96s] paired done
+[    96s] stage paired saved (52 s)
+[   228s] converge done
+[   228s] stage converge saved (132 s)
+[   278s] corr done
+[   278s] stage corr saved (50 s)
+[   304s] sobol P1_dual_lock done
+[   329s] sobol R1_reference_PE done
+[   329s] stage sobol saved (51 s)
+[   388s] pareto done
+[   388s] stage pareto saved (59 s)
+[   479s] fals done
+[   479s] stage fals saved (92 s)
+[   497s] struct lumped variants done
+[   499s] spatial mix 3: not calibratable
+[   501s] spatial mix 10: not calibratable
+[   502s] spatial mix 30: not calibratable
+[   569s] spatial mix 100 done (P0/base = 5.41)
+[   633s] spatial mix 1000 done (P0/base = 1.21)
+[   696s] spatial mix 1e+06 done (P0/base = 0.96)
+[   696s] stage struct saved (217 s)
+[   722s] abc done
+[   722s] stage abc saved (25 s)
+[   742s] valid done
+[   742s] stage valid saved (21 s)

@@ -1,0 +1,13 @@
+symbol,meaning,unit,evidence_grade,prior,basis
+P0,baseline apparent permeability of a hydrophilic 2-4 kDa peptide; median CALIBRATED to the Seeker baseline,cm/h,C,"lognormal median 0.009746 (calibrated), sigma_ln 0.6","Calibrated so that the median of the reference arm R1 equals 1.2 % (mid-point of the 1-2 % enhancer-tablet range, Brayden et al. 2020; oral semaglutide 0.8 %, Overgaard et al. 2021). Dispersion: author assumption."
+k_deg,luminal proteolysis rate in the niche without protection,1/h,D,"lognormal median 2.0, sigma_ln 0.5",Author assumption (no direct measurement for an enhancer niche); order of 1 h^-1 for luminal proteolysis of an unprotected peptide.
+S_post,"survival after apical entry (intra-enterocyte handling, first pass)",-,D,"beta mean 0.55, sd 0.15",Author assumption (intra-enterocyte handling and first pass).
+ER0,Caco-2 efflux ratio if the peptide is an efflux substrate,-,C,"lognormal median 2.5, sigma_ln 0.5","Caco-2 bidirectional efflux ratios for P-glycoprotein substrates, order of magnitude (Collnot et al. 2006); applies only if the peptide is a substrate."
+p_sub,probability that the peptide is an efflux substrate (scenario axis),-,D,"scenario axis, base 0.5","Scenario axis, not a prior (peptide-specific; unknown for any given 2-4 kDa peptide)."
+A_m,mucosal contact area of the niche,cm2,D,"lognormal median 30.0, sigma_ln 0.3",Author assumption: mucosal contact area of the tablet niche.
+EC50,"PE concentration for half-maximal permeability enhancement (millimolar PE activity, Maher 2016; Twarog 2019)",mM,C,"lognormal median 25.0, sigma_ln 0.5",Millimolar range of SNAC and sodium caprate effective concentrations (Maher et al. 2016; Twarog et al. 2019).
+Emax,maximal fold-increase of peptide permeability by the PE,-,D,"lognormal median 80.0, sigma_ln 0.5",Author assumption (maximal fold-increase of peptide permeability).
+h,Hill coefficient of PE effect,-,D,"lognormal median 2.0, sigma_ln 0.25",Author assumption (Hill coefficient).
+C_tox,PE concentration for half-maximal epithelial damage,mM,D,"lognormal median 80.0, sigma_ln 0.4",Author assumption (half-damage concentration of the enhancer).
+t_rev,epithelial recovery time after PE falls below threshold,h,D,"lognormal median 1.0, sigma_ln 0.5",Author assumption (epithelial recovery time after enhancer clearance).
+IC50,"efflux-modulator potency (piperine 15-74 uM in Caco-2, Bhardwaj 2002; TPGS sub-mM, Collnot 2006)",mM,C,"lognormal median 0.5, sigma_ln 0.8",Piperine 15-74 uM in Caco-2 (Bhardwaj et al. 2002); TPGS sub-millimolar (Collnot et al. 2006); wide dispersion.

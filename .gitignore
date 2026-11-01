@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+code/results/
+code/results_ext/
+*.pkl
+~$*
+manuscript/all.txt

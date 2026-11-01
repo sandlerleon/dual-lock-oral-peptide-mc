@@ -1,0 +1,9 @@
+arm,pe_mmol,inh_mmol,delta_cm,k_dil_per_h,mism_sigma_ln,protection,k_dep_per_h,k_rel_per_h
+R0_peptide_alone,0.0,0.0,1.0,1.5,0.6,0.0,0.5,2.0
+R1_reference_PE,1.0,0.0,1.0,1.5,0.5,0.5,0.5,2.0
+R2_reference_PE_efflux,1.0,0.033,1.0,1.5,0.5,0.5,0.5,2.0
+P1_dual_lock,0.5,0.033,0.3,0.8,0.15,0.7,3.0,1.2
+P2_no_efflux_module,0.5,0.0,0.3,0.8,0.15,0.7,3.0,1.2
+P3_no_colocalisation,0.5,0.033,1.0,1.5,0.5,0.7,3.0,2.0
+P4_no_protection,0.5,0.033,0.3,0.8,0.15,0.5,3.0,1.2
+P5_no_self_limiting_PE,0.5,0.033,0.3,0.8,0.15,0.7,0.5,1.2
