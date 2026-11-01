@@ -209,10 +209,72 @@ def fig_si_numerics():
     fig.tight_layout(); save(fig, "figS1_numerics")
 
 
+def fig_constrained():
+    r = J("constrained")["variants"]; names = list(r.keys())
+    short = {"lumped (original)": "lumped\n(original)", "stagnant layer": "stagnant\nlayer", "solubility limit": "solubility\nlimit",
+             "uptake-constrained (layer + solubility)": "uptake-\nconstrained", "uptake-constrained, damage at efficacious concentration": "constrained +\ndamage at\nefficacy"}
+    fig, ax = plt.subplots(1, 2, figsize=(7.4, 3.3), gridspec_kw={"width_ratios": [1.15, 1]})
+    x = np.arange(len(names)); w = 0.38
+    ax[0].bar(x - w / 2, [r[n]["R1_reference_PE"]["p_success"] * 100 for n in names], w, color=C["R"], label="R1")
+    ax[0].bar(x + w / 2, [r[n]["P1_dual_lock"]["p_success"] * 100 for n in names], w, color=C["P"], label="P1")
+    for i, n in enumerate(names):
+        ax[0].text(i + w / 2, r[n]["P1_dual_lock"]["p_success"] * 100 + 1.5, "%.0f" % (r[n]["P1_dual_lock"]["p_success"] * 100), ha="center", fontsize=6.5)
+    ax[0].set_xticks(x); ax[0].set_xticklabels([short[n] for n in names], fontsize=5.8); ax[0].set_ylabel("P(success), %"); ax[0].legend(fontsize=7, frameon=False)
+    ax[0].text(-0.02, 1.04, "a", transform=ax[0].transAxes, weight="bold", fontsize=10)
+    cases = [("none", None), ("R1 in\n0.4-2.0 %", "abc_0.4_2.0"), ("R1 in\n0.4-1.0 %", "abc_0.4_1.0"), ("F <= 10 %\nonly", "tail_rejected_F_le_10"), ("R1 0.4-2.0 %\nand F <= 10 %", "abc_and_tail")]
+    for j, (mn, col, off) in enumerate((("lumped (original)", C["R"], -0.2), ("uptake-constrained (layer + solubility)", C["P"], 0.2))):
+        v = [r[mn]["P1_dual_lock"]["p_success"] if k is None else r[mn][k]["P1_success"] for _, k in cases]
+        ax[1].bar(np.arange(len(cases)) + off, [100 * a for a in v], 0.38, color=col, label="lumped" if j == 0 else "uptake-constrained")
+    ax[1].set_xticks(range(len(cases))); ax[1].set_xticklabels([c[0] for c in cases], fontsize=5.6); ax[1].set_ylabel("P1 P(success), %"); ax[1].legend(fontsize=7, frameon=False)
+    ax[1].text(-0.02, 1.04, "b", transform=ax[1].transAxes, weight="bold", fontsize=10)
+    fig.tight_layout(); save(fig, "fig10_constrained")
+
+
+def fig_mechanism():
+    r = J("constrained")["variants"]; names = list(r.keys())[:4]
+    lab = {"lumped (original)": "lumped", "stagnant layer": "stagnant\nlayer", "solubility limit": "solubility\nlimit", "uptake-constrained (layer + solubility)": "uptake-\nconstrained"}
+    fig, ax = plt.subplots(1, 3, figsize=(7.6, 2.9)); x = np.arange(len(names))
+    ax[0].bar(x, [r[n]["matrix_only_gain"] for n in names], color=C["Q"]); ax[0].set_yscale("log"); ax[0].axhline(3, ls="--", color="k", lw=0.8); ax[0].text(-0.45, 3.3, "3-fold threshold", fontsize=6.5, color="white")
+    for i, n in enumerate(names):
+        ax[0].text(i, r[n]["matrix_only_gain"] * 1.1, "%.1f" % r[n]["matrix_only_gain"], ha="center", fontsize=6.5)
+    ax[0].set_xticks(x); ax[0].set_xticklabels([lab[n] for n in names], fontsize=5.8); ax[0].set_ylabel("matrix-only gain (median F ratio)"); ax[0].text(-0.02, 1.04, "a", transform=ax[0].transAxes, weight="bold", fontsize=10)
+    ax[1].bar(x - 0.2, [100 * r[n]["M0_matrix_only"]["median"] for n in names], 0.4, color="#9ecae1", label="matrix only (M0)")
+    ax[1].bar(x + 0.2, [100 * r[n]["R0_peptide_alone"]["median"] for n in names], 0.4, color="#cccccc", label="peptide alone (R0)")
+    ax[1].set_xticks(x); ax[1].set_xticklabels([lab[n] for n in names], fontsize=5.8); ax[1].set_ylabel("median $F$ (%)"); ax[1].legend(fontsize=6, frameon=False); ax[1].text(-0.02, 1.04, "b", transform=ax[1].transAxes, weight="bold", fontsize=10)
+    dd = lambda n, k, ref: 100 * (r[n][k]["p_success"] - r[n][ref]["p_success"])
+    ax[2].bar(x - 0.2, [dd(n, "R1_plus_delta", "R1_reference_PE") for n in names], 0.4, color=C["G"], label="R1 + thin niche")
+    ax[2].bar(x + 0.2, [dd(n, "P1_minus_delta", "P1_dual_lock") for n in names], 0.4, color=C["P"], label="P1 - thin niche")
+    ax[2].axhline(0, color="k", lw=0.6); ax[2].set_xticks(x); ax[2].set_xticklabels([lab[n] for n in names], fontsize=5.8); ax[2].set_ylabel("change in P(success), points"); ax[2].legend(fontsize=6, frameon=False)
+    ax[2].text(-0.02, 1.04, "c", transform=ax[2].transAxes, weight="bold", fontsize=10)
+    fig.tight_layout(); save(fig, "fig11_mechanism_controls")
+
+
+def fig_optim():
+    r = J("optim"); models = [k for k in r if "|" not in k]; fig, ax = plt.subplots(1, 3, figsize=(7.8, 3.1)); x = np.arange(len(models)); w = 0.15
+    series = (("nominal design (test)", C["R"], None, lambda m: r[m]["nominal_test"]),
+              ("unconstrained optimum, training", "#c6dbef", "//", lambda m: r[m]["optimized_train"]),
+              ("unconstrained optimum, test", "#6baed6", None, lambda m: r[m]["optimized_test"]),
+              ("credible optimum, training", "#c7e9c0", "//", lambda m: r[m + "|credible"]["optimized_train"]),
+              ("credible optimum, test", C["G"], None, lambda m: r[m + "|credible"]["optimized_test"]))
+
+    def bars(a, key, ylabel, legend=False):
+        for k, (lab, col, hatch, get) in enumerate(series):
+            v = [100 * get(m)[key] for m in models]
+            e = [196 * get(m)["se"] if key == "p_success" else 0 for m in models]
+            a.bar(x + (k - 2) * w * 1.08, v, w, yerr=e, color=col, hatch=hatch, label=lab, capsize=1.5, edgecolor="white", linewidth=0.3)
+        a.set_xticks(x); a.set_xticklabels([m.replace(" (original)", "") for m in models], fontsize=7); a.set_ylabel(ylabel)
+        if legend:
+            a.legend(fontsize=5.2, frameon=False, loc="upper left", bbox_to_anchor=(0.0, 1.0))
+    bars(ax[0], "p_success", "P(success), %", True); ax[0].set_ylim(0, 112); ax[0].text(-0.02, 1.04, "a", transform=ax[0].transAxes, weight="bold", fontsize=10)
+    bars(ax[1], "p_safe", "P(predicted reversible), %"); ax[1].text(-0.02, 1.04, "b", transform=ax[1].transAxes, weight="bold", fontsize=10)
+    bars(ax[2], "median", "median $F$ (%)"); ax[2].axhline(4, ls="--", color=C["Q"], lw=0.8); ax[2].text(-0.02, 1.04, "c", transform=ax[2].transAxes, weight="bold", fontsize=10)
+    fig.tight_layout(); save(fig, "fig12_optimized_vs_nominal")
+
+
 if __name__ == "__main__":
     only = sys.argv[2:]
     fns = {"schematic": fig_schematic, "arms": fig_arms, "ablation": fig_ablation, "sobol": fig_sobol, "pareto": fig_pareto, "fals": fig_fals, "struct": fig_struct,
-           "conv": fig_conv_corr, "plaus": fig_plaus, "numerics": fig_si_numerics}
+           "conv": fig_conv_corr, "plaus": fig_plaus, "numerics": fig_si_numerics, "constrained": fig_constrained, "mechanism": fig_mechanism, "optim": fig_optim}
     for k, f in fns.items():
         if only and k not in only: continue
         try: f()

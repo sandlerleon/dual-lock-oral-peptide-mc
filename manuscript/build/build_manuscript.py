@@ -67,7 +67,8 @@ def tbl(num, caption, header, rows, widths=None, size=15):
 
 # Figure numbers are assigned in order of appearance; register the schematic first (it is placed in section 2 by insertion below).
 FIGN.update({"fig1_schematic": "Fig. 1", "fig2_arms": "Fig. 2", "fig3_ablation": "Fig. 3", "fig4_sobol": "Fig. 4", "fig8_convergence_correlation": "Fig. 5", "fig5_pareto": "Fig. 6",
-             "fig6_falsification": "Fig. 7", "fig7_structural": "Fig. 8", "fig9_plausibility": "Fig. 9"})
+             "fig6_falsification": "Fig. 7", "fig11_mechanism_controls": "Fig. 8", "fig12_optimized_vs_nominal": "Fig. 9", "fig7_structural": "Fig. 10", "fig9_plausibility": "Fig. 11", "fig10_constrained": "Fig. 12"})
+TABN_SEC = {"decomp": "Table 7", "optim": "Table 9"}
 _fig[0] = 0
 
 
@@ -215,13 +216,14 @@ tbl(6, "Falsification map in numbers: for each niche thickness $\delta$ (cm), th
     ["$\delta$ (cm)", "Best dose (mmol)", "Best P(success)", "Median $F$ at best dose", "P(reversible) at best dose", "Region B non-empty"], rows, [1.0, 1.2, 1.2, 1.6, 1.6, 1.4], 15)
 
 # --------------------------------------------------------------------------------------------------------------------- 6 robustness
+exec(open(os.path.join(HERE, "new_sections5.py"), encoding="utf-8").read())
 add(("h1", "6. Robustness and falsification"))
 add(("h2", "6.1 Structural uncertainty: stagnant layer and spatial transport"))
 V = ST["variants"]
 lum = V["lumped (base)"]; lay = V["lumped + stagnant layer"]; layN = V["lumped + stagnant layer, P0 not recalibrated"]
 dtimes = ST["diffusion_times_h"]
 add(("p", "The lumped niche assumes instantaneous mixing. With the diffusivity of a 3-kDa peptide in a gel of $10^{-6}$ cm$^2$ s$^{-1}$, the time for diffusion across 0.30 cm is %s h and across 1.0 cm %s h, longer than the 8 h horizon, so an unmixed niche would behave very differently. "
-          "Table 7 and %s compare the lumped model with a serial stagnant layer (thickness 20 to 830 $\\mu$m, median 150 $\\mu$m [@Atuma2001], diffusivity in mucus [@Cu2009]) and with the spatial model for effective dispersion multipliers from 3 to $10^6$ times the molecular diffusivity. "
+          "Table 10 and %s compare the lumped model with a serial stagnant layer (thickness 20 to 830 $\\mu$m, median 150 $\\mu$m [@Atuma2001], diffusivity in mucus [@Cu2009]) and with the spatial model for effective dispersion multipliers from 3 to $10^6$ times the molecular diffusivity. "
           "Each variant is recalibrated so that R1 again has a median of 1.2%%."
           % (f(dtimes["P1_peptide"], 0), f(dtimes["R1_peptide"], 0), FIGN["fig7_structural"])))
 rows = []
@@ -233,7 +235,7 @@ for k, v in V.items():
         rows.append([LBL(k), "n/a", "n/a", "n/a", "n/a", "R1 cannot reach 1.2%% (maximum %s%% at $P_0$ = 40 cm h$^{-1}$)" % ("%.2g" % (100 * v["max_median_F_R1_at_P0_40"]))]); continue
     rows.append([LBL(k), "%sx" % f(v["p0_over_base"], 2), pct(v["R1_reference_PE"]["median"], 2), pct(v["P1_dual_lock"]["median"]), "%s / %s" % (pct(v["R1_reference_PE"]["p_success"], 0), pct(v["P1_dual_lock"]["p_success"], 0)),
                  "P3 %s, P5 %s" % (pct(v["P3_no_colocalisation"]["p_success"], 0), pct(v["P5_no_self_limiting_PE"]["p_success"], 0))])
-tbl(7, "Structural uncertainty. Each variant is recalibrated to a median $F$ of 1.2% for R1 ($P_0$ relative to the lumped value is shown; a value far above 1 is implausible for a hydrophilic peptide). "
+tbl(10, "Structural uncertainty. Each variant is recalibrated to a median $F$ of 1.2% for R1 ($P_0$ relative to the lumped value is shown; a value far above 1 is implausible for a hydrophilic peptide). "
        "All variants use the same 2,000 draws per arm.",
     ["Structural model", "$P_0$/base", "R1 median $F$", "P1 median $F$", "P(success) R1 / P1", "Ablations: P(success)"], rows, [2.4, 0.8, 1.0, 1.0, 1.4, 2.4], 14)
 fig_fixed("fig7_structural", "Structural uncertainty. (a) P(success) of R1 and P1 under the lumped model, the lumped model with a stagnant layer and the spatial diffusion-reaction model at several effective dispersion multipliers; annotations give the recalibrated $P_0$ relative to the base value. "

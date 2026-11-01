@@ -317,7 +317,132 @@ def stage_valid():
     tick("valid done"); return out
 
 
-STAGES = ["equiv", "paired", "converge", "corr", "sobol", "pareto", "fals", "struct", "abc", "valid"]
+
+def _models(U, UL, US):
+    """The structural / constraint variants compared in the revision. Each returns (g, outputs) for a spec and baseline permeability p0v."""
+    return {
+        "lumped (original)": lambda sp, p, **kw: L.run_u(U, sp, p, **kw),
+        "uptake-constrained": lambda sp, p, **kw: L.run_u(U, sp, p, layer=UL, sol=US, **kw),
+    }
+
+
+def stage_constrained():
+    """Matrix-only artefact and biologically constrained recalibration: stagnant layer (serial resistance) + peptide-solubility limit on the dissolved amount,
+    each variant recalibrated to the same 1.2 % anchor; matrix-only gain, volume-only effects, upper tail, damage-at-efficacy and tail-rejection analyses."""
+    n = 20000; U = L.uniforms(n, S0 + 20); UL = L.uniforms(n, S0 + 21)[:, :2]; US = L.uniforms(n, S0 + 22)[:, :2]
+    P1, R1 = ARM_DEF["P1_dual_lock"], ARM_DEF["R1_reference_PE"]
+    specs = {"R0_peptide_alone": ARM_DEF["R0_peptide_alone"], "M0_matrix_only": dict(P1, pe=0.0, inh=0.0), "R1_reference_PE": R1, "P1_dual_lock": P1,
+             "R1_plus_delta": dict(R1, delta=0.30), "P1_minus_delta": dict(P1, delta=1.0), "P3_no_colocalisation": ARM_DEF["P3_no_colocalisation"], "P5_no_self_limiting_PE": ARM_DEF["P5_no_self_limiting_PE"],
+             "R1_plus_confinement_bundle": dict(R1, delta=0.30, k_dil=0.8, mism=0.15, k_rel=1.2)}
+    variants = {"lumped (original)": dict(), "stagnant layer": dict(layer=UL), "solubility limit": dict(sol=US), "uptake-constrained (layer + solubility)": dict(layer=UL, sol=US),
+                "uptake-constrained, damage at efficacious concentration": dict(layer=UL, sol=US, mods={"C_tox": 25.0 / 80.0})}
+    out = {"variants": {}, "n": n}
+    for name, kw in variants.items():
+        calkw = {k: v for k, v in kw.items() if k != "mods"}
+        fcal = lambda p, kw=kw: L.run_u(U[:8000], R1, p, **{k: (v[:8000] if hasattr(v, "shape") else v) for k, v in kw.items()})[1]
+        pc_ = L.calibrate_generic(fcal, iters=24, lo=1e-4, hi=5.0)
+        res = {}; store = {}
+        for k, sp in specs.items():
+            g, o = L.run_u(U, sp, pc_, **kw); store[k] = (g, o); res[k] = L.summ(o); res[k]["frac_gt_10"] = float(np.mean(o["F"] > 0.10)); res[k]["frac_gt_6"] = float(np.mean(o["F"] > 0.06))
+        res["p0"] = pc_; res["p0_over_base"] = pc_ / p0()
+        res["matrix_only_gain"] = res["M0_matrix_only"]["median"] / res["R0_peptide_alone"]["median"]
+        # observation-conditioned and tail-rejection analyses within this variant
+        oR, oP = store["R1_reference_PE"][1], store["P1_dual_lock"][1]
+        okP = L.success(oP)
+        acc = (oR["F"] >= 0.004) & (oR["F"] <= 0.02)
+        accs = (oR["F"] >= 0.004) & (oR["F"] <= 0.01)
+        cred = (oR["F"] <= 0.10) & (oP["F"] <= 0.10)
+        res["abc_0.4_2.0"] = dict(frac=float(acc.mean()), P1_success=float(okP[acc].mean()), P1_median=float(np.median(oP["F"][acc])), P1_frac_gt_10=float(np.mean(oP["F"][acc] > 0.10)))
+        res["abc_0.4_1.0"] = dict(frac=float(accs.mean()), P1_success=float(okP[accs].mean()), P1_median=float(np.median(oP["F"][accs])))
+        res["tail_rejected_F_le_10"] = dict(frac=float(cred.mean()), P1_success=float(okP[cred].mean()), R1_success=float(L.success(oR)[cred].mean()), P1_median=float(np.median(oP["F"][cred])))
+        both = acc & cred
+        res["abc_and_tail"] = dict(frac=float(both.mean()), P1_success=float(okP[both].mean()), P1_median=float(np.median(oP["F"][both])))
+        out["variants"][name] = res
+        tick("constrained: %s done (P0 x%.2f)" % (name, pc_ / p0()))
+    return out
+
+
+def stage_revers():
+    """Reversibility endpoints: sensitivity of success to the damage-hours limit, the recovery limit and the potency/toxicity ratio C_tox/EC50."""
+    n = 20000; U = L.uniforms(n, S0 + 30); res = {"scenarios": {}, "ctox_ratio": {}}
+    arms = {"R1_reference_PE": ARM_DEF["R1_reference_PE"], "P1_dual_lock": ARM_DEF["P1_dual_lock"], "P5_no_self_limiting_PE": ARM_DEF["P5_no_self_limiting_PE"]}
+    for mult in (1.0, 0.3, 0.1, 0.03):
+        res["ctox_ratio"][str(mult)] = {"C_tox_over_EC50_median": 80.0 * mult / 25.0}
+        for k, sp in arms.items():
+            g, o = L.run_u(U, sp, p0(), mods={"C_tox": mult})
+            F = o["F"]; DH = o["DH"]; trev = o["t_last"] + g["t_rev"]
+            d = dict(median_DH=float(np.median(DH)), p90_DH=float(np.percentile(DH, 90)), p_DH_gt_0p5=float(np.mean(DH > 0.5)), p_success=float(L.success(o).mean()), p_safe=float(o["safe"].mean()))
+            d["grid"] = {"%s|%s" % (dh, tr): float(np.mean((F >= M.F_TARGET) & (DH <= dh) & (trev <= tr))) for dh in (0.5, 0.1, 0.02, 0.005, 0.001) for tr in (2.0, 3.0, 4.0, 6.0)}
+            d["p_recov_le"] = {str(tr): float(np.mean(trev <= tr)) for tr in (1.0, 2.0, 3.0, 4.0, 6.0)}
+            res["ctox_ratio"][str(mult)][k] = d
+    tick("revers done"); return res
+
+
+def stage_optim():
+    """Out-of-sample evaluation of a formulation optimized on training draws: design variables k_rel, enhancer dose and wash-out are chosen on a training set
+    and evaluated, together with the nominal design, on an independent test set (new seed), for the original lumped model and the uptake-constrained model."""
+    P1 = ARM_DEF["P1_dual_lock"]; out = {}
+    krels = [1.2, 1.6, 2.0, 2.5, 3.0, 4.0]; doses = [0.35, 0.5, 0.75, 1.0]; kdils = [0.4, 0.8, 1.5]
+    for model, kw in (("lumped (original)", "lumped"), ("uptake-constrained", "constrained")):
+        Utr = L.uniforms(8000, S0 + 40); Ute = L.uniforms(20000, S0 + 41)
+        kws = lambda U_, off: ({} if kw == "lumped" else dict(layer=L.uniforms(len(U_), S0 + off)[:, :2], sol=L.uniforms(len(U_), S0 + off + 1)[:, :2]))
+        ktr, kte = kws(Utr, 50), kws(Ute, 52)
+        pc_ = p0()
+        if kw == "constrained":
+            Uc = L.uniforms(8000, S0 + 20); pc_ = L.calibrate_generic(lambda p: L.run_u(Uc, ARM_DEF["R1_reference_PE"], p, layer=L.uniforms(8000, S0 + 21)[:, :2], sol=L.uniforms(8000, S0 + 22)[:, :2])[1], iters=24, lo=1e-4, hi=5.0)
+        grid = []
+        for kr in krels:
+            for d_ in doses:
+                for kd in kdils:
+                    sp = dict(P1, k_rel=kr, k_dil=kd); g, o = L.run_u(Utr, sp, pc_, pe=d_, **ktr); grid.append((float(L.success(o).mean()), kr, d_, kd, float(np.mean(o["F"] > 0.10)), float(o["safe"].mean())))
+        grid.sort(reverse=True); best = grid[0]
+        def ev(sp, pe_, U_, kk):
+            g, o = L.run_u(U_, sp, pc_, pe=pe_, **kk); s = L.summ(o); s["frac_gt_10"] = float(np.mean(o["F"] > 0.10)); return s
+        nom_tr = ev(P1, 0.5, Utr, ktr); nom_te = ev(P1, 0.5, Ute, kte)
+        opt_sp = dict(P1, k_rel=best[1], k_dil=best[3])
+        opt_tr = ev(opt_sp, best[2], Utr, ktr); opt_te = ev(opt_sp, best[2], Ute, kte)
+        ref_te = ev(ARM_DEF["R1_reference_PE"], ARM_DEF["R1_reference_PE"]["pe"], Ute, kte)
+        # paired difference on the test set
+        g1, o1 = L.run_u(Ute, P1, pc_, pe=0.5, **kte); g2, o2 = L.run_u(Ute, opt_sp, pc_, pe=best[2], **kte)
+        cred = [t for t in grid if t[4] <= 0.30 and t[1] <= 2.5]
+        bc = cred[0]; cred_sp = dict(P1, k_rel=bc[1], k_dil=bc[3])
+        cred_tr = ev(cred_sp, bc[2], Utr, ktr); cred_te = ev(cred_sp, bc[2], Ute, kte)
+        g3, o3 = L.run_u(Ute, cred_sp, pc_, pe=bc[2], **kte)
+        out[model + "|credible"] = dict(best=dict(k_rel=bc[1], dose=bc[2], k_dil=bc[3], train_success=bc[0]), optimized_train=cred_tr, optimized_test=cred_te, nominal_test=nom_te, nominal_train=nom_tr, reference_test=ref_te,
+                                        paired_opt_minus_nominal_test=paired_ci(L.success(o3), L.success(o1)), rule="maximize training P(success) subject to P(F>10%) <= 0.30 and k_rel <= 2.5 per h")
+        out[model] = dict(best=dict(k_rel=best[1], dose=best[2], k_dil=best[3], train_success=best[0]), top5=[dict(train_success=a, k_rel=b, dose=c, k_dil=d) for a, b, c, d, e_, f_ in grid[:5]],
+                          nominal_train=nom_tr, nominal_test=nom_te, optimized_train=opt_tr, optimized_test=opt_te, reference_test=ref_te,
+                          paired_opt_minus_nominal_test=paired_ci(L.success(o2), L.success(o1)), n_train=8000, n_test=20000, n_grid=len(grid))
+        tick("optim %s done: best %s" % (model, best))
+    return out
+
+
+
+def stage_decomp():
+    """Decomposition of the matrix-only gain: which formulation parameter of the matrix (niche thickness, wash-out, protection, release) produces the gain over peptide alone,
+    in the original lumped model and in the uptake-constrained model (same recalibrated baselines as stage 'constrained')."""
+    cons = json.load(open(os.path.join(OUT, "ext_constrained.json")))["variants"]
+    n = 20000; U = L.uniforms(n, S0 + 20); UL = L.uniforms(n, S0 + 21)[:, :2]; US = L.uniforms(n, S0 + 22)[:, :2]
+    R0 = ARM_DEF["R0_peptide_alone"]; P1 = ARM_DEF["P1_dual_lock"]
+    # matrix parameters applied to peptide alone (no enhancer, no modulator); the protection of R0 is 0, that of the matrix 0.70
+    def arm(**kw):
+        return dict(R0, pe=0.0, inh=0.0, **kw)
+    arms = {"R0 peptide alone": arm(), "R0 + thin niche (delta 0.30)": arm(delta=0.30), "R0 + slow wash-out (0.8)": arm(k_dil=0.8), "R0 + protection 0.70": arm(prot=0.70),
+            "R0 + niche + wash-out": arm(delta=0.30, k_dil=0.8), "R0 + niche + wash-out + synchronous release": arm(delta=0.30, k_dil=0.8, mism=0.15, k_rel=1.2),
+            "M0 matrix only (all matrix parameters)": dict(P1, pe=0.0, inh=0.0), "M0 without protection": dict(P1, pe=0.0, inh=0.0, prot=0.0), "M0 without niche thinning": dict(P1, pe=0.0, inh=0.0, delta=1.0)}
+    out = {}
+    for name, kw in (("lumped (original)", {}), ("uptake-constrained (layer + solubility)", dict(layer=UL, sol=US))):
+        p0v = cons[name]["p0"]; res = {}
+        for k, sp in arms.items():
+            g, o = L.run_u(U, sp, p0v, **kw); res[k] = dict(median=float(np.median(o["F"])), p95=float(np.percentile(o["F"], 95)))
+        base = res["R0 peptide alone"]["median"]
+        for k in res:
+            res[k]["gain"] = res[k]["median"] / base
+        out[name] = res
+    tick("decomp done"); return out
+
+
+STAGES = ["equiv", "paired", "converge", "corr", "sobol", "pareto", "fals", "struct", "abc", "valid", "constrained", "revers", "optim", "decomp"]
 
 
 # ------------------------------------------------------------------------------------------------ verification tests
@@ -380,6 +505,14 @@ def self_tests():
     # 9 paired-difference helper
     d = paired_ci(np.ones(100) > 0, np.zeros(100) > 0)
     chk("paired_ci returns +1 for an all-true minus all-false contrast", abs(d[0] - 1) < 1e-12)
+    # 10 solubility limit
+    US2 = L.uniforms(1200, 15)[:, :2]
+    g0, o0 = L.run_u(Us, ARM_DEF["P1_dual_lock"], pz)
+    gS, oS = L.run_u(Us, ARM_DEF["P1_dual_lock"], pz, sol=US2)
+    chk("solubility limit never raises F (same draws)", np.all(oS["F"] <= o0["F"] + 1e-12))
+    chk("solubility limit: mass balance closes (1e-9)", np.max(np.abs(oS["closure"] - 1)) < 1e-9, "%.1e" % np.max(np.abs(oS["closure"] - 1)))
+    gM, oM = L.run_u(Us, ARM_DEF["P1_dual_lock"], pz, mods={"C_tox": 0.1})
+    chk("lowering C_tox raises damage-hours (same draws)", np.all(oM["DH"] >= o0["DH"] - 1e-12))
     print("ALL PASS" if ok else "SOME FAILED")
     return ok
 

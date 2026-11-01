@@ -2,21 +2,21 @@
 """Part 3: front matter (title, authors, abstract, keywords) inserted at the start of the block list. Executed by build_manuscript.py."""
 nb_ = FA["delta_max_for_B"]
 ABSTRACT = [
-    "Oral absolute bioavailability of 2 to 4 kDa peptides stays near 1%. The best-characterized enhancer tablet acts only where and when enhancer, peptide and protection coincide, which suggests that the architecture of the dosage form is a design variable. "
-    "We built a mechanistic Monte Carlo model of a co-localized, reversible permeation-enhancer and efflux-modulator architecture (Dual-Lock) with explicit mass balances, evidence-graded and correlated priors, and asked when it would raise bioavailability to at least 4% with reversible epithelial exposure. "
-    "All arms shared the same random draws, so that ablations and negative controls isolate each component. Global sensitivity analysis, benefit-risk analysis, falsification maps, alternative transport models, observation-conditioned analysis and comparison with published human data tested robustness.",
-    "With the reference calibrated to 1.2%%, Dual-Lock reached a median of %s at half the enhancer dose and met the target with reversible exposure in %s of draws against %s for the reference. Confinement accounted for most of the benefit (removing it cost %s of success) but required a self-limiting enhancer to remain reversible. "
-    "Output uncertainty was shared among peptide biology, enhancer pharmacology and architecture. The advantage persisted in every transport structure that reproduced the baseline, but fell to %s if the reference performs like oral semaglutide, and the upper tail and the enhancer-dose response disagreed with published data. "
-    "Failure boundaries (niche thickness above %g cm, an unmixed niche, a matrix-only gain above 3-fold) define the first experiments. The results are conditional on author-assigned priors and are not evidence that any formulation works."
-    % (pct(p1["median"]), pct(p1["p_success"], 0), pct(r1["p_success"], 0), "%d points" % round(abs(100 * vp1["P1_minus_delta"]["d_success"][0])), pct(A1["P1"]["p_success"], 0), FA["delta_max_for_p30"]),
+    "Oral absolute bioavailability of 2 to 4 kDa peptides stays near 1%. We built a mechanistic Monte Carlo model of a co-localized, reversible permeation-enhancer and efflux-modulator architecture (Dual-Lock) with explicit mass balances and evidence-graded, correlated priors, and asked when it would raise bioavailability to at least 4% with predicted reversible epithelial exposure. "
+    "Arms shared random draws, so that ablations and negative controls isolate each component. Global sensitivity, benefit-risk and falsification analyses, spatial and uptake-constrained transport models, reversibility-endpoint scenarios, observation-conditioned analysis and an out-of-sample evaluation of an optimized design tested robustness.",
+    "With the reference calibrated to 1.2%%, Dual-Lock reached a median of %s at half the enhancer dose and met the target in %s of draws against %s for the reference. Confinement caused most of the benefit: a matrix-only control gained %s-fold over peptide alone, from thinning the niche (%s-fold) and the protease shield, and the gain survived stagnant-layer and solubility limits. "
+    "In the uptake-constrained model success was %s (reference %s); it was %s to %s if the reference performs like oral semaglutide, and the upper tail stayed beyond published values. The advantage survived damage at the efficacious concentration but not below it. "
+    "A credible release-rate optimum added %s to %s points out of sample. The transport structure is not independently validated; failure boundaries define the first experiments. Results are conditional on author-assigned priors."
+    % (pct(p1["median"]), pct(p1["p_success"], 0), pct(r1["p_success"], 0), f(CN_[LUM]["matrix_only_gain"], 0), f(DC_[LUM]["R0 + thin niche (delta 0.30)"]["gain"], 1), pct(CN_[CON]["P1_dual_lock"]["p_success"], 0), pct(CN_[CON]["R1_reference_PE"]["p_success"], 0),
+       pct(CN_[LUM]["abc_0.4_1.0"]["P1_success"], 0), pct(CN_[CON]["abc_0.4_1.0"]["P1_success"], 0), f(100 * OP_[LUM + "|credible"]["paired_opt_minus_nominal_test"][0], 0), f(100 * OP_[OPC + "|credible"]["paired_opt_minus_nominal_test"][0], 0)),
 ]
 abs_words = len(" ".join(ABSTRACT).split())
 print("abstract words:", abs_words)
 assert abs_words <= 250, abs_words
 HIGHLIGHTS = ["Oral peptide enhancers act in a micro-niche; a mechanistic model quantifies it",
               "Paired Monte Carlo arms isolate what co-localization adds to bioavailability",
-              "Variance-based sensitivity ranks niche thickness and enhancer potency first",
-              "Spatial and stagnant-layer models test whether the predicted advantage survives",
+              "Matrix-only gain survives uptake limits; it is thinning plus protease shield",
+              "Optimized release is tested out of sample, not reported as in-sample optimum",
               "Failure boundaries give measurable pass-fail criteria for the first experiments"]
 assert all(len(h) <= 85 for h in HIGHLIGHTS), [len(h) for h in HIGHLIGHTS]
 KEYWORDS = "Oral peptide delivery; Permeation enhancer; Efflux modulation; Monte Carlo simulation; Global sensitivity analysis; Falsifiability"

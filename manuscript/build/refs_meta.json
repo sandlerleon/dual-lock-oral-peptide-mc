@@ -339,5 +339,40 @@
   "issue": "1",
   "pages": "178-196",
   "doi": "10.1016/j.jtbi.2008.04.011"
+ },
+ "Twarog2021": {
+  "authors": [
+   "Twarog, C.",
+   "McCartney, F.",
+   "Harrison, S.M.",
+   "Illel, B.",
+   "Fattal, E.",
+   "Brayden, D.J."
+  ],
+  "year": 2021,
+  "title": "Comparison of the effects of the intestinal permeation enhancers, SNAC and sodium caprate (C10): Isolated rat intestinal mucosae and sacs",
+  "journal": "European Journal of Pharmaceutical Sciences",
+  "volume": "158",
+  "issue": "",
+  "pages": "105685",
+  "doi": "10.1016/j.ejps.2020.105685"
+ },
+ "Twarog2022": {
+  "authors": [
+   "Twarog, C.",
+   "Fattal, E.",
+   "Noiray, M.",
+   "Illel, B.",
+   "Brayden, D.J.",
+   "Taverna, M.",
+   "Hillaireau, H."
+  ],
+  "year": 2022,
+  "title": "Characterization of the physicochemical interactions between exenatide and two intestinal permeation enhancers: Sodium caprate (C10) and salcaprozate sodium (SNAC)",
+  "journal": "International Journal of Pharmaceutics",
+  "volume": "626",
+  "issue": "",
+  "pages": "122131",
+  "doi": "10.1016/j.ijpharm.2022.122131"
  }
 }

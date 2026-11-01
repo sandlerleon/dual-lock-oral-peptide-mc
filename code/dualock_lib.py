@@ -87,14 +87,22 @@ def sobol_uniforms(n_pow2, seed):
 
 
 # ------------------------------------------------------------------------------------------------ lumped model (+ optional stagnant layer)
-def run_u(U, spec, p0, pe=None, inh=None, p_sub=None, emax_mult=1.0, sig_scale=1.0, layer=None, dt=M.DT, t_end=M.T_END, track=False):
-    """Lumped model on uniforms U. layer=(U_layer (n,2)) adds a serial stagnant layer: P_eff -> 1/(1/P_eff + h_s/D_m) with h_s, D_m lognormal."""
+SOL = dict(D_mg=100.0, D_sig=0.35, S_mg_ml=20.0, S_sig=0.8)   # peptide dose (50-200 mg) and solubility (grade D)
+
+
+def run_u(U, spec, p0, pe=None, inh=None, p_sub=None, emax_mult=1.0, sig_scale=1.0, layer=None, dt=M.DT, t_end=M.T_END, track=False, sol=None, mods=None):
+    """Lumped model on uniforms U. layer=(U_layer (n,2)) adds a serial stagnant layer: P_eff -> 1/(1/P_eff + h_s/D_m) with h_s, D_m lognormal.
+    sol=(U_sol (n,2)) adds a peptide-solubility limit on the dissolved amount in the niche (P <= S V / D). mods: multipliers applied to named inputs (e.g. {'C_tox': 0.3})."""
     extra = None
     if layer is not None:
         hs = _ln(layer[:, 0], LAYER["h_s_cm"], LAYER["h_s_sig"])
         Dm = _ln(layer[:, 1], LAYER["D_cm2_s"], LAYER["D_sig"]) * SEC_PER_H
         extra = {"Ps": Dm / hs}
+    if sol is not None:
+        extra = dict(extra or {}); extra["D_mg"] = _ln(sol[:, 0], SOL["D_mg"], SOL["D_sig"]); extra["S_sol"] = _ln(sol[:, 1], SOL["S_mg_ml"], SOL["S_sig"])
     g = inputs_from_u(U, spec, p0, p_sub, emax_mult, sig_scale, extra)
+    for k, v in (mods or {}).items():
+        g[k] = g[k] * v
     return g, integrate_serial(g, spec, pe, inh, dt, t_end, track)
 
 
@@ -103,13 +111,14 @@ LAYER = dict(h_s_cm=0.015, h_s_sig=0.7, D_cm2_s=1.0e-6, D_sig=0.5)   # stagnant 
 
 def integrate_serial(g, spec, pe=None, inh=None, dt=M.DT, t_end=M.T_END, track=False):
     """Same equations as oral_peptide_mc.integrate, except that when g contains 'Ps' the permeability is P_eff,s = 1/(1/P_eff + 1/Ps)."""
-    if "Ps" not in g:
+    if "Ps" not in g and "S_sol" not in g:
         return M.integrate(g, "P1_dual_lock", dt=dt, t_end=t_end, pe=spec["pe"] if pe is None else pe, inh=spec["inh"] if inh is None else inh, track=track)
     n = len(g["P0"]); V = g["A_m"] * g["delta"]
     pe_dose = spec["pe"] if pe is None else pe; inh_dose = spec["inh"] if inh is None else inh
     Pt = np.ones(n); P = np.zeros(n); Et = np.full(n, pe_dose); E = np.zeros(n); It = np.full(n, inh_dose); I = np.zeros(n)
     Abs = np.zeros(n); Deg = np.zeros(n); Dil = np.zeros(n); DH = np.zeros(n); t_last = np.zeros(n)
     kdeg_eff = g["k_deg"] * (1.0 - g["Pr"])
+    Pmax = g["S_sol"] * V / g["D_mg"] if "S_sol" in g else None
     for i in range(int(round(t_end / dt))):
         t = i * dt
         Ce = 1000.0 * E / V; Ci = 1000.0 * I / V
@@ -117,10 +126,14 @@ def integrate_serial(g, spec, pe=None, inh=None, dt=M.DT, t_end=M.T_END, track=F
             x = np.where(Ce > 0, (Ce / g["EC50"]) ** g["h"], 0.0); H = x / (1.0 + x)
             y = np.where(Ce > 0, (Ce / g["C_tox"]) ** 3.0, 0.0); Hd = y / (1.0 + y)
         Peff = g["P0"] * (1.0 + g["Emax"] * H)
-        Peff = 1.0 / (1.0 / Peff + 1.0 / g["Ps"])
+        if "Ps" in g:
+            Peff = 1.0 / (1.0 / Peff + 1.0 / g["Ps"])
         ER = 1.0 + (g["ER0"] - 1.0) / (1.0 + Ci / g["IC50"])
         kabs = Peff / (g["delta"] * ER)
-        rP = g["k_rel"] * Pt; rE = g["k_rel"] * g["m"] * Et; rI = g["k_rel"] * g["m"] * It
+        rP = g["k_rel"] * Pt
+        if "S_sol" in g:
+            rP = rP * np.clip(1.0 - P / Pmax, 0.0, 1.0)
+        rE = g["k_rel"] * g["m"] * Et; rI = g["k_rel"] * g["m"] * It
         a_flux = kabs * P; d_flux = kdeg_eff * P; w_flux = g["k_dil"] * P
         Pt = Pt - rP * dt; P = P + (rP - a_flux - d_flux - w_flux) * dt
         Abs += a_flux * dt; Deg += d_flux * dt; Dil += w_flux * dt

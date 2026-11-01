@@ -95,8 +95,9 @@ tests = [("Original model (oral_peptide_mc.py --test)", "peptide mass balance cl
          ("Spatial model, monotonicity", "slower mixing lowers $F$ for the same draws."),
          ("Stagnant layer", "never raises $F$ for the same draws; mass balance closes to $10^{-9}$."),
          ("Module logic with the new sampler", "no effect of the modulator if the peptide is never a substrate; the enhancer and modulator multiply the matrix-only median $F$ by a factor of at least 4."),
+         ("Solubility limit and input modifiers", "the solubility limit never raises $F$ for the same draws and the mass balance closes to $10^{-9}$; lowering $C_{tox}$ never lowers damage-hours."),
          ("Determinism and helpers", "identical results for a fixed seed; the paired-difference helper returns the exact contrast.")]
-add(("table", "**Table S6.** Automated verification tests (python oral_peptide_mc.py --test: 9 tests; python run_extended.py --test: 16 tests). They verify the software, not the biology.", ["Test", "What is checked"], [list(t) for t in tests], [2.2, 6.6], 15))
+add(("table", "**Table S6.** Automated verification tests (python oral_peptide_mc.py --test: 9 tests; python run_extended.py --test: 19 tests). They verify the software, not the biology.", ["Test", "What is checked"], [list(t) for t in tests], [2.2, 6.6], 15))
 
 add(("h1", "Table S7. Literature values used in the plausibility checks"))
 lit = [["Oral semaglutide (SNAC) absolute bioavailability", "0.8% under the recommended dosing conditions; within-subject variability 137%; falls with larger water volume and rises with longer post-dose fasting", "Overgaard et al. 2021, abstract", "[@Overgaard2021]"],
@@ -107,6 +108,24 @@ lit = [["Oral semaglutide (SNAC) absolute bioavailability", "0.8% under the reco
        ["Adherent mucus gel thickness (rat)", "jejunum about 123 $\\mu$m; colon about 830 $\\mu$m; firmly adherent layer 20 to 154 $\\mu$m (small intestine 20 $\\mu$m or absent)", "Atuma et al. 2001, abstract", "[@Atuma2001]"]]
 add(("table", "**Table S7.** Values quoted from the abstracts of the sources (full texts were not read). The values are used only to place the model output in context and are not calibration data, except for the 1 to 2% baseline of R1.",
      ["Quantity", "Value", "Source", "Ref."], lit, [2.2, 4.0, 1.7, 1.2], 14))
+
+# REV2: tables of the revision
+add(("h1", "Table S8. Uptake-constrained variants, decomposition, reversibility endpoints and optimization"))
+rows = []
+for r in rd("S8_constrained_variants")[1:]:
+    if r[2] in ("R1_reference_PE", "P1_dual_lock", "M0_matrix_only", "R0_peptide_alone"):
+        rows.append([r[0].replace("uptake-constrained, damage at efficacious concentration", "constrained + damage at efficacy"), g(r[1], 3), r[2], "%.2f" % (100 * float(r[3])), "%.1f" % (100 * float(r[4])), "%.1f" % (100 * float(r[6])), "%.1f" % (100 * float(r[8]))])
+add(("table", "**Table S8a.** Model variants (each recalibrated to the 1.2% anchor): baseline permeability relative to the original, median and 95th percentile of $F$, P(success) and fraction of draws above 10%.",
+     ["Variant", "$P_0$/base", "Arm", "Median $F$ (%)", "95th pct. (%)", "P(success) (%)", "$F>10$% (%)"], rows, [2.6, 0.8, 1.9, 0.9, 0.9, 0.9, 0.9], 13))
+rows = [[r[0].replace("uptake-constrained, damage at efficacious concentration", "constrained + damage at efficacy"), r[1], "%.1f" % (100 * float(r[2])), "%.1f" % (100 * float(r[3])), "%.2f" % (100 * float(r[4]))] for r in rd("S8b_constrained_restrictions")[1:]]
+add(("table", "**Table S8b.** Dual-Lock P1 under the restrictions of the biologically constrained recalibration.", ["Variant", "Restriction", "Draws retained (%)", "P1 P(success) (%)", "P1 median $F$ (%)"], rows, [2.6, 2.0, 1.1, 1.1, 1.1], 13))
+rows = [[r[0], r[1], "%.2f" % (100 * float(r[2])), "%.2f" % (100 * float(r[3])), "%.1f" % float(r[4])] for r in rd("S9_matrix_only_decomposition")[1:]]
+add(("table", "**Table S9.** Decomposition of the matrix-only gain (no enhancer, no modulator).", ["Model", "Arm", "Median $F$ (%)", "95th pct. (%)", "Gain"], rows, [2.2, 3.4, 1.0, 1.0, 0.7], 13))
+rows = [[g(r[0], 3), r[1][:2], r[2], r[3], "%.1f" % (100 * float(r[4]))] for r in rd("S10_reversibility_grid")[1:] if r[1] == "P1_dual_lock" and r[3] in ("3.0", "4.0", "6.0")]
+add(("table", "**Table S10.** P(success) of P1 for combinations of the damage-hours limit and the recovery limit, at several $C_{tox}/EC_{50}$ ratios (medians).", ["$C_{tox}/EC_{50}$", "Arm", "DH max (h)", "Recovery max (h)", "P(success) (%)"], rows, [1.4, 0.7, 1.2, 1.4, 1.2], 13))
+rows = [[r[0], r[1], r[2][:60], "%.1f" % (100 * float(r[3])), "%.1f" % (100 * float(r[4])), "%.2f" % (100 * float(r[5])), "%.1f" % (100 * float(r[6])), "%.1f" % (100 * float(r[7]))] for r in rd("S11_optimization")[1:]]
+add(("table", "**Table S11.** Nominal and optimized designs on training and test draws (design: release rate, dose, wash-out).", ["Model", "Set", "Design", "P(success)", "P(reversible)", "Median $F$", "95th pct.", "$F>10$%"], rows, [1.6, 1.4, 2.6, 0.9, 0.9, 0.8, 0.8, 0.8], 12))
+
 add(("refs",))
 
 if __name__ == "__main__":

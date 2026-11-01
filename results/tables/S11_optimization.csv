@@ -1,0 +1,21 @@
+model,set,design_best,P_success,P_safe,median_F,p95_F,frac_F_gt_10
+lumped (original)|credible,nominal_train,"{""k_rel"": 2.0, ""dose"": 0.5, ""k_dil"": 1.5, ""train_success"": 0.539125}",0.450875,0.853625,0.05168189946595107,0.29442292996698993,0.303625
+lumped (original)|credible,nominal_test,"{""k_rel"": 2.0, ""dose"": 0.5, ""k_dil"": 1.5, ""train_success"": 0.539125}",0.44725,0.859,0.049415496551371854,0.2861836800127226,0.29415
+lumped (original)|credible,optimized_train,"{""k_rel"": 2.0, ""dose"": 0.5, ""k_dil"": 1.5, ""train_success"": 0.539125}",0.539125,0.9595,0.050748608723560046,0.2866877166114051,0.297875
+lumped (original)|credible,optimized_test,"{""k_rel"": 2.0, ""dose"": 0.5, ""k_dil"": 1.5, ""train_success"": 0.539125}",0.52475,0.95945,0.04868237592248437,0.2779398362057695,0.2872
+lumped (original)|credible,reference_test,"{""k_rel"": 2.0, ""dose"": 0.5, ""k_dil"": 1.5, ""train_success"": 0.539125}",0.1508,0.83695,0.011947688139072994,0.11228820232548743,0.0624
+lumped (original),nominal_train,"{""k_rel"": 4.0, ""dose"": 1.0, ""k_dil"": 0.4, ""train_success"": 0.862125}",0.450875,0.853625,0.05168189946595107,0.29442292996698993,0.303625
+lumped (original),nominal_test,"{""k_rel"": 4.0, ""dose"": 1.0, ""k_dil"": 0.4, ""train_success"": 0.862125}",0.44725,0.859,0.049415496551371854,0.2861836800127226,0.29415
+lumped (original),optimized_train,"{""k_rel"": 4.0, ""dose"": 1.0, ""k_dil"": 0.4, ""train_success"": 0.862125}",0.862125,0.914875,0.2283935659102055,0.5347815531073209,0.79625
+lumped (original),optimized_test,"{""k_rel"": 4.0, ""dose"": 1.0, ""k_dil"": 0.4, ""train_success"": 0.862125}",0.86055,0.91285,0.2198276013816055,0.5286415942941057,0.8011
+lumped (original),reference_test,"{""k_rel"": 4.0, ""dose"": 1.0, ""k_dil"": 0.4, ""train_success"": 0.862125}",0.1508,0.83695,0.011947688139072994,0.11228820232548743,0.0624
+uptake-constrained|credible,nominal_train,"{""k_rel"": 2.5, ""dose"": 0.35, ""k_dil"": 0.8, ""train_success"": 0.653625}",0.535875,0.853625,0.05821213428593524,0.2205161952290329,0.273125
+uptake-constrained|credible,nominal_test,"{""k_rel"": 2.5, ""dose"": 0.35, ""k_dil"": 0.8, ""train_success"": 0.653625}",0.53275,0.859,0.057102197017101716,0.21423042797867936,0.263
+uptake-constrained|credible,optimized_train,"{""k_rel"": 2.5, ""dose"": 0.35, ""k_dil"": 0.8, ""train_success"": 0.653625}",0.653625,0.971875,0.06059694588851126,0.22311017714824516,0.2845
+uptake-constrained|credible,optimized_test,"{""k_rel"": 2.5, ""dose"": 0.35, ""k_dil"": 0.8, ""train_success"": 0.653625}",0.64805,0.9724,0.05946546101375605,0.2185452847022741,0.27365
+uptake-constrained|credible,reference_test,"{""k_rel"": 2.5, ""dose"": 0.35, ""k_dil"": 0.8, ""train_success"": 0.653625}",0.0912,0.83695,0.0118610941094234,0.06429751214253053,0.0151
+uptake-constrained,nominal_train,"{""k_rel"": 4.0, ""dose"": 0.75, ""k_dil"": 0.4, ""train_success"": 0.8445}",0.535875,0.853625,0.05821213428593524,0.2205161952290329,0.273125
+uptake-constrained,nominal_test,"{""k_rel"": 4.0, ""dose"": 0.75, ""k_dil"": 0.4, ""train_success"": 0.8445}",0.53275,0.859,0.057102197017101716,0.21423042797867936,0.263
+uptake-constrained,optimized_train,"{""k_rel"": 4.0, ""dose"": 0.75, ""k_dil"": 0.4, ""train_success"": 0.8445}",0.8445,0.948125,0.11512687769443158,0.3399495555528245,0.570625
+uptake-constrained,optimized_test,"{""k_rel"": 4.0, ""dose"": 0.75, ""k_dil"": 0.4, ""train_success"": 0.8445}",0.84375,0.94605,0.114568731453081,0.3323812365802465,0.5677
+uptake-constrained,reference_test,"{""k_rel"": 4.0, ""dose"": 0.75, ""k_dil"": 0.4, ""train_success"": 0.8445}",0.0912,0.83695,0.0118610941094234,0.06429751214253053,0.0151

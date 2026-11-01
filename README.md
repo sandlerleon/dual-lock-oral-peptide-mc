@@ -20,7 +20,8 @@ modulator; proteolysis, wash-out and enhancer clearance; damage-hours as an expo
 * global variance-based sensitivity (Saltelli / Jansen estimators, single inputs and groups) and uncertainty decomposition;
 * benefit-risk (Pareto) dose sweeps and falsification-region maps;
 * structural uncertainty: a stagnant-layer variant and a spatial diffusion-reaction model (implicit finite volumes), each recalibrated to the same baseline;
-* observation-conditioned analysis (rejection ABC) and comparison with published human bioavailability data.
+* observation-conditioned analysis (rejection ABC) and comparison with published human bioavailability data;
+* revision analyses: uptake-constrained model (stagnant layer + peptide-solubility limit), decomposition of the matrix-only gain, biologically constrained recalibration, reversibility-endpoint scenarios (C_tox/EC50, damage-hours and recovery limits) and out-of-sample evaluation of an optimized design (train/test split).
 
 ## Layout
 
@@ -28,7 +29,7 @@ modulator; proteolysis, wash-out and enhancer clearance; damage-hours as an expo
 |---|---|
 | `code/oral_peptide_mc.py` | the original lumped model, priors, arms and 9 self-tests (`--test`, `--run`) |
 | `code/dualock_lib.py` | uniform-variate sampler, copula, stagnant-layer and spatial models, Sobol estimators |
-| `code/run_extended.py` | the analysis stages (`equiv paired converge corr sobol pareto fals struct abc valid`) and 16 verification tests (`--test`) |
+| `code/run_extended.py` | the analysis stages (`equiv paired converge corr sobol pareto fals struct abc valid constrained revers optim decomp`) and 19 verification tests (`--test`) |
 | `code/make_figures.py`, `code/make_tables.py` | figures and Supplementary CSV tables from the result files |
 | `tests/test_all.py` | pytest wrapper of both test suites |
 | `results/` | `results_v1.json` (original run), `ext_*.json` (all numerical results), `tables/` (CSV), `run_ext.log` |
@@ -41,9 +42,9 @@ modulator; proteolysis, wash-out and enhancer clearance; damage-hours as an expo
 pip install -r requirements.txt
 cd code
 python oral_peptide_mc.py --test          # 9 self-tests of the original model (about 25 s)
-python run_extended.py --test             # 16 verification tests of the extension (about 1 min)
+python run_extended.py --test             # 19 verification tests of the extension (about 1 min)
 python oral_peptide_mc.py --run           # original analysis -> results/results.json (about 2 min); headline hash 4df279944ef2355e
-python run_extended.py                    # all extended stages (about 15 min on one core); or name stages: python run_extended.py sobol fals
+python run_extended.py                    # all extended stages (about 30 min on one core); or name stages: python run_extended.py sobol fals
 python make_figures.py results_ext        # figures
 python make_tables.py results_ext         # Supplementary CSV tables
 ```

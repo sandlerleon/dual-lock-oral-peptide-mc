@@ -8,7 +8,7 @@ ABBR = {"The Journal of Pharmacology and Experimental Therapeutics": "J. Pharmac
         "Clinical Pharmacokinetics": "Clin. Pharmacokinet.", "Scientific Reports": "Sci. Rep.", "Nature Reviews Drug Discovery": "Nat. Rev. Drug Discov.",
         "American Journal of Physiology-Gastrointestinal and Liver Physiology": "Am. J. Physiol. Gastrointest. Liver Physiol.", "Computer Physics Communications": "Comput. Phys. Commun.",
         "Computer Physics Communication": "Comput. Phys. Commun.", "Mathematics and Computers in Simulation": "Math. Comput. Simul.",
-        "Communications in Statistics - Simulation and Computation": "Commun. Stat. Simul. Comput.", "Genetics": "Genetics", "Journal of Theoretical Biology": "J. Theor. Biol."}
+        "Communications in Statistics - Simulation and Computation": "Commun. Stat. Simul. Comput.", "Genetics": "Genetics", "Journal of Theoretical Biology": "J. Theor. Biol.", "European Journal of Pharmaceutical Sciences": "Eur. J. Pharm. Sci."}
 YEAR = {"Granhall2019": 2019, "Drucker2020": 2020}
 
 

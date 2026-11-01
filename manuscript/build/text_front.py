@@ -77,6 +77,9 @@ add(("p", "Reversibility requires both a bounded exposure and a bounded duration
 add(("eq", r"\mathrm{reversible}\iff DH\le 0.5\ \mathrm{h}\ \ \mathrm{and}\ \ t_{clear}+t_{rev}\le 4\ \mathrm{h};\qquad \mathrm{success}\iff F\ge 0.04\ \mathrm{and\ reversible}", 9))
 add(("p", "The thresholds of 4% bioavailability and reversibility within hours are those of the published challenge that motivated the work; they are design targets, not regulatory limits. Success is therefore a model-conditional indicator, "
           "and its mean over the prior is called P(success)."))
+add(("p", "In this paper \"reversible\" always means *predicted exposure reversibility*, a model-defined indicator, and never demonstrated safety. Its two parts correspond to measurable epithelial endpoints: the time $t_{clear}+t_{rev}$ stands for the recovery of transepithelial electrical resistance (TEER) after the enhancer has fallen below its effective concentration, "
+          "and damage-hours stand for cumulative exposure to concentrations that reduce viability (for example lactate dehydrogenase release). Both are surrogates with known limitations. In isolated rat mucosae, SNAC and sodium caprate lowered TEER and caused minor epithelial damage at the concentrations that increased fluxes [@Twarog2021], "
+          "so the model's assumption that damage occurs only at about three times the effective concentration is tested explicitly (Section 5.9)."))  # REV2
 add(("h2", "3.3 Calibration"))
 add(("p", "Baseline permeability is the one parameter fixed by data. The median of $P_0$ is set by bisection so that the median bioavailability of the reference arm R1 (a SNAC-like enhancer tablet with a 1.0 cm niche) equals 1.2%, the mid-point of the 1 to 2% range usually quoted for enhancer tablets "
           "[@Brayden2020]:"))
@@ -99,6 +102,11 @@ add(("p", "The enhancer and modulator obey the same equation with their own diff
           "In the limit of strong mixing it reduces to the lumped model (tested; Section 5.3), and mesh and time-step refinement changed the median bioavailability by less than 3%. For each structural variant the baseline permeability is recalibrated so that R1 again has a median of 1.2%, "
           "because the calibration anchor must hold in every structure."))
 
+add(("p", "*Uptake-constrained model.* The compartment model lets the uptake rate constant $P_{eff}/(\\delta\\,ER)$ grow without bound as the niche is thinned, which is the origin of the large matrix-only gain discussed in Section 5.8. Two physical limits are therefore added. "
+          "The stagnant layer of Eq. (11) caps the permeability that the epithelium can express. The dissolved peptide in the niche cannot exceed its solubility $S$ (mg mL$^{-1}$); with the dose $D$ (mg) and the niche volume $V$,"))
+add(("eq", r"P\le P_{max}=\frac{S\,V}{D},\qquad \frac{dP_t}{dt}=-k_{rel}P_t\left(1-\frac{P}{P_{max}}\right)_{+}", 14))
+add(("p", "so that the peptide released into a small niche can only dissolve up to its solubility and the remainder stays in the tablet pool (the balance of Eq. (4) is unchanged). The dose and the solubility are grade-D priors (Table 2). "
+          "Both limits are monotone: they can only lower the bioavailability of a given draw (tested), and the baseline permeability is recalibrated for every variant so that R1 keeps a median of 1.2%. Peptide-enhancer complexation is not modelled; measured affinities for exenatide with SNAC and sodium caprate are low (dissociation constants of about 10 to 100 $\\mu$M) [@Twarog2022]."))
 add(("h1", "4. Monte Carlo methods"))
 add(("h2", "4.1 Priors, evidence grades and correlations"))
 add(("p", "Each uncertain input has a prior and an evidence grade: A, a directly applicable measurement; B, a measurement for a close analogue; C, an order-of-magnitude literature range; D, an author assumption without direct source. No input reaches grade A. "
@@ -115,7 +123,11 @@ rows_pr = [("$P_0$", "baseline apparent permeability", "cm h$^{-1}$", "C", "0.00
            ("$h$", "Hill coefficient of the enhancer effect", "-", "D", "2.0, 0.25"),
            ("$C_{tox}$", "enhancer concentration for half-maximal damage", "mM", "D", "80, 0.40"),
            ("$t_{rev}$", "epithelial recovery time", "h", "D", "1.0, 0.50"),
-           ("$IC_{50}$", "efflux-modulator potency", "mM", "C", "0.5, 0.80")]
+           ("$IC_{50}$", "efflux-modulator potency", "mM", "C", "0.5, 0.80"),
+           ("$D$", "peptide dose (uptake-constrained model)", "mg", "D", "100, 0.35"),
+           ("$S$", "peptide solubility (uptake-constrained model)", "mg mL$^{-1}$", "D", "20, 0.80"),
+           ("$h_s$", "stagnant-layer thickness", "cm", "C", "0.015, 0.70 (20 to 830 $\\mu$m)"),
+           ("$D_m$", "peptide diffusivity in the layer", "cm$^2$ s$^{-1}$", "C", "$10^{-6}$, 0.50")]
 add(("table", "**Table 2.** Common priors (log-normal: median, $\\sigma_{\\ln}$) with evidence grade. Bases: $P_0$ calibrated to the 1 to 2% enhancer-tablet baseline [@Brayden2020]; $ER_0$ from Caco-2 efflux ratios; $EC_{50}$ in the millimolar range reported for SNAC and sodium caprate [@Maher2016;@Twarog2019]; "
           "$IC_{50}$ spans piperine at 15 to 74 $\\mu$M in Caco-2 [@Bhardwaj2002] and sub-millimolar TPGS [@Collnot2006].",
      ["Symbol", "Meaning", "Unit", "Grade", "Prior"], [list(r) for r in rows_pr], [0.8, 3.0, 0.9, 0.6, 2.3], 16))
@@ -152,3 +164,9 @@ add(("p", "Because the reference arm is fitted, three checks do not rely on the 
 add(("h2", "4.6 Software and reproducibility"))
 add(("p", "The model (oral_peptide_mc.py, unchanged from the first version apart from tie-corrected rank correlation), the extension (dualock_lib.py, run_extended.py, make_figures.py), the automated tests, all numerical results (JSON), the parameter provenance table, and the figure scripts are in a versioned repository "
           "archived with a DOI (Data availability). All numbers in the text are generated from the result files."))
+add(("h2", "4.7 Analyses added in the revision"))
+add(("p", "*Uptake constraints and the matrix-only control.* The reference arm, the matrix-only control (P1 architecture without enhancer or modulator), peptide alone, Dual-Lock and its main ablations were run in five variants: the original lumped model; the stagnant layer; the solubility limit; both limits (the uptake-constrained model); and the uptake-constrained model in which damage occurs at the efficacious concentration ($C_{tox}$ set to the median $EC_{50}$). "
+          "Each variant was recalibrated to the same 1.2% anchor. Within each variant the Dual-Lock outcome was also evaluated among the draws in which R1 lies in the published ranges, among the draws in which no arm exceeds 10% (a bounding analysis that treats larger values as non-credible), and under both restrictions."))
+add(("p", "*Reversibility endpoints.* The success indicator was recomputed on a grid of damage-hours limits (0.5 to 0.001 h) and recovery limits (2 to 6 h), and with the median $C_{tox}$ reduced to 30%, 10% and 3% of its base value (potency-to-toxicity ratio from 3.2 down to 0.1)."))
+add(("p", "*Optimized design out of sample.* The release rate (1.2 to 4 h$^{-1}$), enhancer dose (0.35 to 1.0 mmol) and wash-out (0.4 to 1.5 h$^{-1}$) of the nominal design were varied on a grid of 72 combinations; the combination with the highest P(success) on 8,000 training draws defines the optimized design, which, together with the nominal design and the reference, was evaluated on 20,000 independent test draws (new seed). "
+          "The difference between the training and the test estimate is the optimism of the optimization."))
