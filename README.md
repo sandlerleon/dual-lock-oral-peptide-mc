@@ -56,6 +56,10 @@ Seeds are fixed (original 20261031; extension 20261101 + offsets), so a re-run r
 The model of the first version was re-run unchanged in an empty directory: the headline hash (4df279944ef2355e) and all arm results were identical; 18 of 8,683 numbers differed, all Spearman
 coefficients of the sensitivity block (by at most 0.03), because tied ranks (a binary success indicator; the efflux ratio of non-substrates) were broken arbitrarily. The tie-correct version is used here.
 
+## Manuscript language edit
+
+The submitted manuscript is the output of `manuscript/build/build_manuscript.py` after an American-English language edit (Rubriq/AJE, `manuscript/DualLock_IJP_Manuscript_rubriq_edit.docx`). `manuscript/build/merge_rub2.py` merges that edit selectively: 19 paragraphs in which the edit changed the meaning or dropped mathematical symbols were restored. Numbers, equations, tables and figures are unchanged by the edit.
+
 ## Citation
 
 See `CITATION.cff`. MIT licence.

@@ -22,7 +22,7 @@ J = lambda n: json.load(open(os.path.join(RES, "ext_%s.json" % n), encoding="utf
 V1 = json.load(open(os.path.join(HERE, "results_v1.json"), encoding="utf-8"))
 DOIS = json.load(open(os.path.join(HERE, "dois.json"), encoding="utf-8"))
 GITHUB = "https://github.com/sandlerleon/dual-lock-oral-peptide-mc"
-TITLE = "Mechanistic Monte Carlo assessment of co-localized permeation enhancement and efflux modulation for oral peptide delivery"
+TITLE = "Mechanistic Monte Carlo assessment of colocalized permeation enhancement and efflux modulation for oral peptide delivery"
 EQ, PA, CV, CO, SO, PR, FA = J("equiv"), J("paired"), J("converge"), J("corr"), J("sobol"), J("pareto"), J("fals")
 ST, AB, VA = J("struct"), J("abc"), J("valid")
 AR = PA["arms"]

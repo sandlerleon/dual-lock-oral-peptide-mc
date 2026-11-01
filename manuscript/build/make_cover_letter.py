@@ -17,7 +17,7 @@ J = lambda n: json.load(open(os.path.join(RES, "ext_%s.json" % n), encoding="utf
 D = json.load(open(os.path.join(HERE, "dois.json"), encoding="utf-8"))
 FM = json.load(open(os.path.join(OUT, "frontmatter.json"), encoding="utf-8"))
 GITHUB = "https://github.com/sandlerleon/dual-lock-oral-peptide-mc"
-TITLE = "Mechanistic Monte Carlo assessment of co-localized permeation enhancement and efflux modulation for oral peptide delivery"
+TITLE = "Mechanistic Monte Carlo assessment of colocalized permeation enhancement and efflux modulation for oral peptide delivery"
 PA, AB, FA, ST = J("paired"), J("abc"), J("fals"), J("struct")
 r1, p1 = PA["arms"]["R1_reference_PE"], PA["arms"]["P1_dual_lock"]
 A1 = AB["R1 F in [0.4, 1.0] % (oral-semaglutide-like)"]

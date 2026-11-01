@@ -29,7 +29,7 @@ def g(x, d=3):
 
 B = []; add = B.append
 add(("title", "Supplementary Information"))
-add(("centered", "Mechanistic Monte Carlo assessment of co-localized permeation enhancement and efflux modulation for oral peptide delivery", 22))
+add(("centered", "Mechanistic Monte Carlo assessment of colocalized permeation enhancement and efflux modulation for oral peptide delivery", 22))
 add(("centered", "Leon Sandler, Independent Researcher, Northbrook, Illinois, USA", 20))
 add(("centered", "Code and data: %s (software DOI %s; preprint DOI %s)" % (GITHUB, DOIS["code"], DOIS["paper"]), 18))
 add(("blank",))
